@@ -242,9 +242,6 @@ reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE" /v BypassNRO /
 :: Disables User Account Control
 <!-- reg.exe add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableLUA /t REG_DWORD /d 0 /f -->
 
-:: Disables the lock screen
-reg.exe add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Personalization" /v NoLockScreen /t REG_DWORD /d 1 /f
-
 :: Disable Windows Spotlight and set the normal Windows Picture as the desktop background
 :: Disable Windows Spotlight on the lock screen
 reg.exe add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsSpotlightOnLockScreen /t REG_DWORD /d 1 /f
@@ -435,9 +432,6 @@ $path = "C:\Users\Default\Desktop\LAUNCH-CTT-WINUTIL.ps1"
 $content = 'irm https://www.christitus.com/win | iex'
 New-Item -Path $path -ItemType File -Force
 $content | Out-File -FilePath $path -Encoding UTF8 -Force
-
-# Hides the Language Switcher on the Taskbar
-Set-WinLanguageBarOption -UseLegacyLanguageBar
 
 # Configure Maximum Password Age in Windows
 net.exe accounts /maxpwage:UNLIMITED
