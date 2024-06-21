@@ -459,6 +459,14 @@ Invoke-Expression $icaclsCommand | Out-Null
 # Disable Defender Auto Sample Submission
 Set-MpPreference -SubmitSamplesConsent 2 -ErrorAction Continue | Out-Null
 
+# Disable Memory Integrity
+New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios" -Name "HypervisorEnforcedCodeIntegrity" -Force
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" -Name "Enabled" -Type Dword -Value 0 -Force
+
+# Disable Core Isolation
+New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios" -Name "DeviceGuard" -Force
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\DeviceGuard" -Name "LsaCfgFlags" -Type DWord -Value 0 -Force
+
 # Removes Microsoft Edge
 foreach ($line in $lines) {
     if ($line -like '*Architecture : *') {
