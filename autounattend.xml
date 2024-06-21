@@ -67,9 +67,9 @@
 					<Path>powershell.exe -NoProfile -Command "Get-Content -LiteralPath '%TEMP%\remove-features.ps1' -Raw | Invoke-Expression;"</Path>
 				</RunSynchronousCommand>
 				<RunSynchronousCommand wcm:action="add">
-          <Order>5</Order>
-          <Description>Run Chris Titus WinUtil Tweaks</Description>
-          <Path>cmd.exe /c "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\wintweaks.ps1' -Raw | Invoke-Expression;" &gt;&gt;"C:\Windows\Setup\Scripts\wintweaks.log" 2&gt;&amp;1"</Path>
+                    <Order>5</Order>
+                    <Description>Run Chris Titus WinUtil Tweaks</Description>
+                    <Path>cmd.exe /c "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\wintweaks.ps1' -Raw | Invoke-Expression;" &gt;&gt;"C:\Windows\Setup\Scripts\wintweaks.log" 2&gt;&amp;1"</Path>
 				</RunSynchronousCommand>
 				<RunSynchronousCommand wcm:action="add">
 					<Order>6</Order>
@@ -459,13 +459,31 @@ Invoke-Expression $icaclsCommand | Out-Null
 # Disable Defender Auto Sample Submission
 Set-MpPreference -SubmitSamplesConsent 2 -ErrorAction Continue | Out-Null
 
-# Disable Memory Integrity
-New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios" -Name "HypervisorEnforcedCodeIntegrity" -Force
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" -Name "Enabled" -Type Dword -Value 0 -Force
+# (Optional) Disable Core Isolation & Memory Integrity (run the .reg from desktop yourself)
+$regDisable = @"
+Windows Registry Editor Version 5.00
 
-# Disable Core Isolation
-New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios" -Name "DeviceGuard" -Force
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\DeviceGuard" -Name "LsaCfgFlags" -Type DWord -Value 0 -Force
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\DeviceGuard]
+"LsaCfgFlags"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity]
+"Enabled"=dword:00000000
+"@
+
+# (Optional) Enable Core Isolation & Memory Integrity (run the .reg from desktop yourself)
+$regEnable = @"
+Windows Registry Editor Version 5.00
+
+[-HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\DeviceGuard]
+
+[-HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity]
+"@
+
+$regFilePath = "$env:userprofile\Desktop\disableCoreIso-MemoryInteg.reg"
+Set-Content -Path $regFilePath -Value $regDisable -Force
+
+$regFilePath = "$env:userprofile\Desktop\enableCoreIso-MemoryInteg.reg"
+Set-Content -Path $regFilePath -Value $regEnable -Force
 
 # Removes Microsoft Edge
 <!-- foreach ($line in $lines) {
@@ -523,7 +541,7 @@ Remove-Item "C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Progr
 Remove-Item "C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.exe" -ErrorAction Continue
 Remove-Item "C:\Windows\System32\OneDriveSetup.exe" -ErrorAction Continue
 Remove-Item "C:\Windows\SysWOW64\OneDriveSetup.exe" -ErrorAction Continue
- 
+
 # Removes Microsoft Teams
 $TeamsPath = [System.IO.Path]::Combine($env:LOCALAPPDATA, 'Microsoft', 'Teams')
 $TeamsUpdateExePath = [System.IO.Path]::Combine($TeamsPath, 'Update.exe')
@@ -944,6 +962,7 @@ reg.exe add "HKU\DefaultUser\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" 
 
 :: Disables User Account Control
 <!-- reg.exe add "HKU\DefaultUser\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" /v UserAccountControlSettings /t REG_DWORD /d 0 /f -->
+
 :: Disables User Account Sync
 reg.exe add "HKU\DefaultUser\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" /v SettingSyncEnabled /t REG_DWORD /d 0 /f
 
@@ -1111,7 +1130,6 @@ reg.exe delete "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Cont
 reg.exe delete "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\SuggestedApps" /f
 reg.exe add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" /v "HasAccepted" /t REG_DWORD /d 0 /f
 
-
 :: Removes Copilot
 reg.exe add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Runonce" /v "UninstallCopilot" /t REG_SZ /d "" /f
 reg.exe add "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot" /v TurnOffWindowsCopilot /t REG_DWORD /d 1 /f
@@ -1149,6 +1167,7 @@ reg.exe add "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds
 
 :: Disables User Account Control
 <!-- reg.exe add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" /v UserAccountControlSettings /t REG_DWORD /d 0 /f -->
+
 :: Disables User Account Sync
 reg.exe add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" /v SettingSyncEnabled /t REG_DWORD /d 0 /f
 
