@@ -204,6 +204,7 @@ Where-Object -Property 'DisplayName' -In -Value @(
   'Microsoft.Windows.Ai.Copilot.Provider';
   'Microsoft.WindowsMeetNow';
   <!-- 'Microsoft.WindowsStore'; -->
+  'Microsoft.Wallet';
 ) | Remove-AppxProvisionedPackage -AllUsers -Online *&gt;&amp;1 &gt;&gt; "$env:TEMP\remove-packages.log";
 		</File>
 		
